@@ -1,0 +1,9 @@
+{
+    "Gateway": {
+        "NGenius": {
+            "API_KEY": "***API_KEY***",
+            "OUTLETS": "**OUTLETS**"
+        },
+        "PayPal": null
+    }
+}
