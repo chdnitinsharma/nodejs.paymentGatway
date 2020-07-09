@@ -2,7 +2,9 @@
     "Gateway": {
         "NGenius": {
             "API_KEY": "XXXXXXXXXXXXXXXXXXXXXXXX",
-            "OUTLETS": "XXXXXX-XXXX-XXXX-XXXXX-XXXXXXXXX"
+            "OUTLETS": "XXXXXX-XXXX-XXXX-XXXXX-XXXXXXXXX",
+            "HOSTED_SESSION_APIKEY":"XXXXXXXXXXXXXXXXXXXXxxx"
+    
         },
         "PayPal": null
     }

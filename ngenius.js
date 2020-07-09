@@ -23,6 +23,7 @@ async function hostedPaymentLinkSample(){
     const encryptRedirectUrl = 'queryValue';
     // eg: 2500 means AED 25.  
     const createObject={
+        "action":'AUTH', // 'SALE', 'AUTH'
         'amount': { 'currencyCode': 'AED', 'value': 2500 },
         'emailAddress':'testhostedPage@gmail.com',
         'merchantOrderReference':'customId',
@@ -51,20 +52,161 @@ async function hostedPaymentLinkSample(){
 
 
 
-async function getOrderDetail(){
+async function getOrderDetail(orderReference){
 
     const accessToken = await ngeniusPayment.getAccessToken();
-    const orderReference="XXXXX-XXXXX-XXXXX-XXXXX"; 
-
     try{
         const orderDetail=await ngeniusPayment.getOrderDetail(accessToken, orderReference);
         console.log(orderDetail);
+        console.log(orderDetail._embedded.payment[0]._links['cnp:capture'].href);
+        console.log(orderDetail._embedded.payment[0]._links['cnp:cancel'].href);
+        console.log(orderDetail._embedded.payment[0].savedCard);
+        
     }catch(e){
         console.log('hostedPaymentLinkSample Error : ',e);
     }
 
 }
-getOrderDetail();
+// getOrderDetail("1a1af18a-f001-4141-a08b-f3995e78df03");
+
+
+
+/*
+createOrder
+*/
+async function createOrderAUTH(){
+
+    const accessToken = await ngeniusPayment.getAccessToken();
+console.log(accessToken);
+    try{
+          const paymentCard = await ngeniusPayment.createOrderAUTH(accessToken);
+        console.log(paymentCard);
+    }catch(e){
+        console.log('createOrderAUTH Error : ',e);
+    }
+
+}
+// createOrderAUTH();
+
+/*
+submitpaymentCardInformation
+*/
+async function submitpaymentCardInformation(){
+
+    const accessToken = await ngeniusPayment.getAccessToken();
+console.log(accessToken);
+    try{
+        const paymentCard = await ngeniusPayment.createOrderAUTH(accessToken);
+        console.log(paymentCard);
+          const paymentCardUrl = paymentCard.card_link;
+          const _3dspaymentCard = await ngeniusPayment.submitpaymentCardInformation(accessToken, paymentCardUrl);
+
+          console.log(_3dspaymentCard);
+          // cnp3ds_url
+
+          const _3dsHtml = await ngeniusPayment.get3dsHtml(_3dspaymentCard['3ds']);
+        console.log(_3dsHtml);
+    }catch(e){
+        console.log('createOrderAUTH Error : ',e);
+    }
+
+}
+// submitpaymentCardInformation();
+
+
+/*
+payAfter3dPayment
+*/
+async function payAfter3dPayment(cnp3ds_url){
+    try{
+        const accessToken = await ngeniusPayment.getAccessToken();
+        
+        const param={"PaRes":"Y"};
+        const _3dsHtml = await ngeniusPayment.payAfter3dPayment(cnp3ds_url,accessToken,param);
+        console.log(_3dsHtml);
+        
+    }catch(e){
+        console.log('createOrderAUTH Error : ',e);
+    }
+
+}
+// payAfter3dPayment("cnp3ds_url");
+
+/*
+capturePayment
+*/
+async function capturePayment(capture_url){
+    try{
+        const accessToken = await ngeniusPayment.getAccessToken();
+        
+        const param={ amount: { currencyCode: 'AED', value: 2500 } };
+        const _3dsHtml = await ngeniusPayment.capturePayment(capture_url,accessToken,param);
+        console.log(_3dsHtml);
+        
+    }catch(e){
+        console.log('createOrderAUTH Error : ',e);
+    }
+
+}
+// capturePayment("capture_url");
+
+
+/*
+payAfter3dPayment
+*/
+async function cancelPayment(capture_url){
+    try{
+        const accessToken = await ngeniusPayment.getAccessToken();
+        
+        const captureResponse = await ngeniusPayment.cancelPayment(capture_url,accessToken);
+        console.log(captureResponse);
+        
+    }catch(e){
+        console.log('createOrderAUTH Error : ',e);
+    }
+
+}
+//  cancelPayment(capture_url);
+
+
+
+
+
+/*
+websdk
+*/
+async function websdk(){
+
+//     const accessToken = await ngeniusPayment.getAccessToken();
+// console.log(accessToken);
+    try{
+          const _3dsHtml = await ngeniusPayment.websdk();
+        console.log(_3dsHtml);
+    }catch(e){
+        console.log('createOrderAUTH Error : ',e);
+    }
+
+}
+// websdk();
+
+
+/*
+websdk
+*/
+async function payment_hostedSession(sessionId){
+
+        const accessToken = await ngeniusPayment.getAccessToken();
+        try{
+              const _3dsHtml = await ngeniusPayment.payment_hostedSession(accessToken,sessionId);
+            console.log(_3dsHtml);
+        }catch(e){
+            console.log('createOrderAUTH Error : ',e);
+        }
+    
+    }
+    // payment_hostedSession("sessionId");
+
+
 
 }catch(err){
     console.log(err.message);

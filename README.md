@@ -10,11 +10,11 @@ Settings > Integrations  > Service Account
 You will get "API KEY" key from there or create it.
 
 
-Settings > Integrations  > Service Account
-
-You will get "API KEY" key from there or create it.
-
-
 Settings > Organisational hierarchy
 
 You will get "REFERENCE" key from there that is OUTLETS id.
+
+
+Hosted Session:
+
+Settings > Integrations  > Service Account > New > Hosted session (Dropdown)

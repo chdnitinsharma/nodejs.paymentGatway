@@ -1,3 +1,7 @@
+const path = require("path");
+const ejs = require("ejs");
+const fs = require("fs");
+
 // injection
 const init = ({request,config,chalk})=>{
      
@@ -25,22 +29,25 @@ const init = ({request,config,chalk})=>{
 
     const API_KEY = nGeniusConfig.API_KEY;
     const OUTLETS = nGeniusConfig.OUTLETS;
-  
+    const HOSTED_SESSION_APIKEY = nGeniusConfig.HOSTED_SESSION_APIKEY;
     
-const getAccessToken = () => {
+  
+const getAccessToken = async function () {  
 
-    const url = "https://identity-uat.ngenius-payments.com/auth/realms/ni/protocol/openid-connect/token";
+    const url = "https://api-gateway.sandbox.ngenius-payments.com/identity/auth/access-token";
 
-    var options = {
+
+    let options = {
         method: 'POST',
         url: url,
-        headers:
-        {
-            'Content-Type': 'application/x-www-form-urlencoded',
-            Authorization: 'BASIC: ' + API_KEY
+        headers: {
+            'content-type': 'application/vnd.ni-identity.v1+json',
+            'Authorization': 'Basic ' + API_KEY,
+            'accept': 'application/vnd.ni-identity.v1+json'
         },
-        json: true,
-        form: { grant_type: 'client_credentials' }
+        json: {
+            "grant_type": "client_credentials"
+        }
     };
 
     return new Promise((resolve, reject)=>{
@@ -61,20 +68,38 @@ const getAccessToken = () => {
 
 const getHostedPaymentPageUrl = (access_token, customObj ) => {
 
-    const url = " https://api-gateway-uat.ngenius-payments.com/transactions/outlets/" + OUTLETS + "/orders";
-
-    // eg: 2500 means AED 25.   
+    // ?skip3ds=true
+    const url = "https://api-gateway.sandbox.ngenius-payments.com/transactions/outlets/" + OUTLETS + "/orders";
+    
+    // eg: 2500 means AED 25.
     const requestData = {
-        'action': 'SALE',
+        'action': customObj.action,
         'amount': customObj.amount,
         'emailAddress': customObj.emailAddress,
         'merchantOrderReference': customObj.merchantOrderReference,
-        // 'merchantAttributes': {
-        //   'redirectUrl': customObj.redirectUrl,
-        //   'cancelUrl':customObj.cancelUrl, 'cancelText': 'Back to website', 'skipConfirmationPage': true
-        // },
+        'merchantAttributes': {
+            'redirectUrl': customObj.redirectUrl,
+            'cancelUrl':customObj.cancelUrl, 'cancelText': 'Cancel', 'skipConfirmationPage': true
+        },
+        'billingAddress':{
+            'firstName': "customObj.firstname",
+            'lastName':" customObj.lastname",
+            'address1': "customObj.customer_address",
+            'city': "city",
+            'countryCode': "UAE",
+        },
+        // savedCard:{
+        //     maskedPan: '411111******1111',
+        //     expiry: '2024-07',
+        //     cardholderName: 'NAME',
+        //     scheme: 'VISA',
+        //     cardToken: 'XXXXXXX',
+        //     recaptureCsc: true
+        //   }
         
     };
+
+    console.log(requestData);
 
     var options = {
         method: 'POST',
@@ -195,7 +220,7 @@ const createOrderAndPaymentSingleCall = (access_token) => {
         "order": {
             "action": "SALE",
             "amount": { "currencyCode": "AED", "value": 1000 },
-            'emailAddress': 'test@gmail.com'
+            'emailAddress': 'test@yopmail.com'
         },
         "payment": {
             "pan":"4111111111111111",
@@ -313,6 +338,328 @@ const getOrderDetail = (access_token, orderReference) => {
     });
 };
 
+
+const createOrderAUTH = (access_token, cb) => {
+
+    const url = " https://api-gateway-uat.ngenius-payments.com/transactions/outlets/" + OUTLETS + "/orders";
+ // eg: 2500 means AED 25.  
+   
+    const requestData = {
+        action: 'AUTH',
+        'amount': { 'currencyCode': 'AED', 'value': 2500 },
+        'emailAddress':'testhostedPage@yopmail.com',
+        'merchantOrderReference':'customId-orderID',
+        'billingAddress':{
+            firstName: 'FIRST_NAME',
+            lastName: 'LAST_NAME'
+        },
+        
+    };
+
+    var options = {
+        method: 'POST',
+        url: url,
+        headers:
+        {
+            'Content-Type': 'application/vnd.ni-payment.v2+json',
+            'Accept': 'application/vnd.ni-payment.v2+json',
+            Authorization: 'Bearer ' + access_token
+        },
+        json: true,
+        json: requestData,
+    };
+
+    return new Promise((resolve, reject)=>{
+        request(options, function (error, response, body) {
+            if (body.error){
+                errorLog(body.error);
+                reject(body.error_description);
+            }else{
+                const result = {
+                    'payment_href': body._links['payment']['href'],
+                    'state': body._embedded.payment[0]['state'],
+                    '_link': body._embedded.payment[0]['_links'],
+                    'card_link': body._embedded.payment[0]['_links']['payment:card']['href'],
+                    'saved-card': body._embedded.payment[0]['_links']['payment:saved-card']['href'],                    
+                    'reference': body.reference
+                };
+                resolve(result);
+            } 
+        });
+    });
+};
+
+
+
+const submitpaymentCardInformation = (access_token, paymentCardUrl, cb) => {
+    const url =paymentCardUrl;
+    // eg: 2500 means AED 25.  
+      
+       const requestData = {
+           pan: "4111111111111111",
+           expiry: "2021-06",
+           cvv: "123",
+           cardholderName: "John Brown"
+       };
+   
+       var options = {
+           method: 'PUT',
+           url: url,
+           headers:
+           {
+               'Content-Type': 'application/vnd.ni-payment.v2+json',
+               'Accept': 'application/vnd.ni-payment.v2+json',
+               cardholderName: "John Brown",
+               Authorization: 'Bearer ' + access_token
+           },
+           json: true,
+           json: requestData,
+       };
+   
+       return new Promise((resolve, reject)=>{
+           request(options, function (error, response, body) {
+   
+               if (body.error){
+                   errorLog(body.error);
+                   reject(body.error_description);
+               }else{
+                   const result = {
+                       'cnp3ds_url': body._links['cnp:3ds'].href,
+                       'state': body.state,
+                       '3ds': body['3ds']
+                   };
+                   resolve(result);
+               } 
+           });
+       });
+};
+
+
+function get3dsHtml(_3ds){
+const emailTemplatePath = path.join(__dirname);
+  
+  const filePathContent = `${emailTemplatePath}/_3dspage.ejs`;
+  const compiled = ejs.compile(fs.readFileSync(filePathContent, "utf8"));
+
+  const defaultParams ={
+    out_acsurl : _3ds.acsUrl,
+    out_acspareq : _3ds.acsPaReq,
+    out_acsmd : _3ds.acsMd,
+    out_acsterm: "http://domain/success",
+    terminateScript:"http://domain/reject"
+  }; 
+
+  let allParams =defaultParams;
+
+  const html = compiled(allParams);
+
+  return html;
+}
+
+
+
+
+const payAfter3dPayment = (cnp3ds_url,accessToken,param, cb) => {
+    const url =cnp3ds_url;
+    // eg: 2500 means AED 25.  
+      
+       const requestData = param;
+   
+       var options = {
+           method: 'POST',
+           url: url,
+           headers:
+           {
+               'Content-Type': 'application/vnd.ni-payment.v2+json',
+               'Accept': 'application/vnd.ni-payment.v2+json',
+               Authorization: 'Bearer ' + accessToken
+           },
+           json: true,
+           json: requestData,
+       };
+   
+       return new Promise((resolve, reject)=>{
+           request(options, function (error, response, body) {
+   
+               if (body.error){
+                   errorLog(body.error);
+                   reject(body.error_description);
+               }else{
+
+                console.log(body);
+                process.exit();
+
+                   const result = {
+                       'cnp3ds_url': body._links['cnp:3ds'].href,
+                       'state': body.state,
+                       '3ds': body['3ds']
+                   };
+
+                 resolve(result);
+               } 
+           });
+       });
+};
+
+
+const capturePayment = (capture_url,accessToken,param) => {
+    const url =capture_url;
+    // eg: 2500 means AED 25.  
+      
+       const requestData = param;
+   
+       var options = {
+           method: 'POST',
+           url: url,
+           headers:
+           {
+               'Content-Type': 'application/vnd.ni-payment.v2+json',
+               'Accept': 'application/vnd.ni-payment.v2+json',
+               Authorization: 'Bearer ' + accessToken
+           },
+           json: true,
+           json: requestData,
+       };
+   
+       return new Promise((resolve, reject)=>{
+           request(options, function (error, response, body) {
+            console.log(url);
+               if (body.error){
+                   errorLog(body.error);
+                   reject(body.error_description);
+               }else{
+
+                console.log(body);
+                process.exit();
+
+                   const result = {
+                       'cnp3ds_url': body._links['cnp:3ds'].href,
+                       'state': body.state,
+                       '3ds': body['3ds']
+                   };
+               resolve(result);
+               } 
+           });
+       });
+};
+
+
+
+const cancelPayment = (capture_url,accessToken) => {
+    const url =capture_url;
+    // eg: 2500 means AED 25.  
+      
+
+       var options = {
+           method: 'PUt',
+           url: url,
+           headers:
+           {
+               'Content-Type': 'application/vnd.ni-payment.v2+json',
+               'Accept': 'application/vnd.ni-payment.v2+json',
+               Authorization: 'Bearer ' + accessToken
+           }
+       };
+   
+       return new Promise((resolve, reject)=>{
+           request(options, function (error, response, body) {
+            console.log(url);
+               if (body.error){
+                   errorLog(body.error);
+                   reject(body.error_description);
+               }else{
+
+                console.log(body);
+                process.exit();
+
+                   const result = {
+                       'cnp3ds_url': body._links['cnp:3ds'].href,
+                       'state': body.state,
+                       '3ds': body['3ds']
+                   };
+
+                   resolve(result);
+               } 
+           });
+       });
+};
+
+
+
+function websdk(){
+    const emailTemplatePath = path.join(__dirname);
+      
+      const filePathContent = `${emailTemplatePath}/web_sdk.ejs`;
+      const compiled = ejs.compile(fs.readFileSync(filePathContent, "utf8"));
+    
+      const defaultParams ={
+          outlet:OUTLETS,
+          hostedSessionId:HOSTED_SESSION_APIKEY
+      }; 
+    
+      let allParams =defaultParams;
+    
+      const html = compiled(allParams);
+    
+      return html;
+    }
+
+
+    
+    const payment_hostedSession = (access_token,sessionId, cb) => {
+
+        const url = "https://api-gateway.sandbox.ngenius-payments.com/transactions/outlets/"+OUTLETS+"/payment/hosted-session/"+sessionId
+        
+     // eg: 2500 means AED 25.  
+       
+        const requestData = {
+            action: 'AUTH',
+            'amount': { 'currencyCode': 'AED', 'value': 2500 },
+            'emailAddress':'testhostedPage@yopmail.com',
+            'merchantOrderReference':'customId-orderID',
+            'billingAddress':{
+                firstName: 'FIRST_NAME',
+                lastName: 'LAST_NAME'
+            },
+            
+        };
+    
+        var options = {
+            method: 'POST',
+            url: url,
+            headers:
+            {
+                'Content-Type': 'application/vnd.ni-payment.v2+json',
+                'Accept': 'application/vnd.ni-payment.v2+json',
+                Authorization: 'Bearer ' + access_token
+            },
+            json: true,
+            json: requestData,
+        };
+    
+        return new Promise((resolve, reject)=>{
+            request(options, function (error, response, body) {
+                if (body.error){
+                    errorLog(body.error);
+                    reject(body.error_description);
+                }else{
+
+                  const result = {
+                        'payment_href': body._links['payment']['href'],
+                        'state': body._embedded.payment[0]['state'],
+                        '_link': body._embedded.payment[0]['_links'],
+                        'card_link': body._embedded.payment[0]['_links']['payment:card']['href'],
+                        'saved-card': body._embedded.payment[0]['_links']['payment:saved-card']['href'],                    
+                        'reference': body.reference
+                    };
+                    resolve(result);
+                } 
+            });
+        });
+    };
+
+
+
     return {
         getAccessToken,
         getHostedPaymentPageUrl,
@@ -320,7 +667,15 @@ const getOrderDetail = (access_token, orderReference) => {
         cardEntered,
         createOrderAndPaymentSingleCall,
         createOrderAndPaymentRecurringSingleCall,
-        getOrderDetail
+        getOrderDetail,
+        createOrderAUTH,
+        submitpaymentCardInformation,
+        get3dsHtml,
+        payAfter3dPayment,
+        capturePayment,
+        cancelPayment,
+        websdk,
+        payment_hostedSession
     };
 
 };

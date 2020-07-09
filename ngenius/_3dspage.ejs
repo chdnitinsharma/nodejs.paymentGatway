@@ -1,0 +1,75 @@
+<!-- $cnp3ds_url = $output->_links->{'cnp:3ds'}->href;
+$acsurl = $output->{'3ds'}->acsUrl;
+$acspareq = $output->{'3ds'}->acsPaReq;
+$acsmd = $output->{'3ds'}->acsMd;
+$acsterm = "https://[your-post-3ds-script]";   
+
+'3ds': {
+    acsUrl: 'https://api-gateway-uat.ngenius-payments.com/netcetera/acs/create',
+    acsPaReq: 'AcsPaReq',
+    acsMd: '9d891917e2129bb5'
+  }
+
+  out_acsurl = 3ds.acsUrl;
+  out_acspareq = 3ds.acsPaReq;
+  out_acsmd = 3ds.acsMd;
+
+ out_acsurl = "";
+ out_acspareq = "";
+ out_acsmd = "";
+ $out_acsterm = "";
+
+ $in_acspares = "";
+ $in_acsmd = "";
+
+ if (!empty($_GET)) {
+
+   if (isset($_GET['acsUrl'])) { out_acsurl = $_GET['acsUrl']; }
+   if (isset($_GET['PaReq'])) { out_acspareq = $_GET['PaReq']; }
+   if (isset($_GET['MD'])) { out_acsmd = $_GET['MD']; }
+   if (isset($_GET['TermUrl'])) { $out_acsterm = $_GET['TermUrl']; }
+
+ }
+
+ if (!empty($_POST)) {
+
+   if (isset($_POST['PaRes'])) { $in_acspares = $_POST['PaRes']; }
+   if (isset($_POST['MD'])) { $in_acsmd = $_POST['MD']; }
+
+ } -->
+
+<html>
+
+ <head>
+
+
+ </head>
+
+   <% if(out_acsurl){ %>
+
+   acsUrl: <%=out_acsurl%> <br>
+
+   <form action="<%=out_acsurl%>" method="POST" enctype="application/x-www-form-urlencoded">
+
+     PaReq: <input type="text" id="PaReq" name="PaReq" value="<%=out_acspareq%>"><br>
+     TermUrl: <input type="text" id="TermUrl" name="TermUrl" value="<%=terminateScript%>"><br>
+     MD: <input type="text" id="MD" name="MD" value="<%=out_acsmd%>"><br>
+
+     <input type="submit">
+
+   </form>
+   <% } %>
+   <!-- <?php elseif (!empty($_POST)) :?>
+
+     PaRes: <input type="text" id="PaRes" name="PaRes" value="<?php echo ($in_acspares); ?>"><br>
+     MD: <input type="text" id="MDRes" name="MDRes" value="<?php echo ($in_acsmd); ?>"><br>
+
+   <?php else : ?> -->
+
+      <center>[ Awaiting 3DS ]</center>
+
+   <!-- <?php endif; ?> -->
+
+ </body>
+
+</html>
