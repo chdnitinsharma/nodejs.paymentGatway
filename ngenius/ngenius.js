@@ -528,15 +528,13 @@ const capturePayment = (capture_url,accessToken,param) => {
                    errorLog(body.error);
                    reject(body.error_description);
                }else{
-
-                console.log(body);
-                process.exit();
-
-                   const result = {
-                       'cnp3ds_url': body._links['cnp:3ds'].href,
-                       'state': body.state,
-                       '3ds': body['3ds']
-                   };
+                const result = {
+                    'amount': body.amount,
+                    'state': body.state,
+                    'savedCard': body.savedCard,
+                    'updateDateTime': body.updateDateTime,
+                    'orderReference': body.orderReference
+                 };
                resolve(result);
                } 
            });
