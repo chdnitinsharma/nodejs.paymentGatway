@@ -76,10 +76,17 @@ async function paymentFromSavedCard(paymentSavedCardUrl){
     try{
         const param={
             maskedPan: '411111******1111',
+<<<<<<< HEAD
             expiry: '2024-07',
             cardholderName: 'NAME',
             scheme: 'VISA',
             cardToken: 'XXXXXXX',
+=======
+            expiry: '2022-02',
+            cardholderName: 'Avc',
+            scheme: 'VISA',
+            cardToken: 'dG9rZW5pemVkUGFuLy92MS8vU0hPV19OT05FLy8xMTExMTExNDExMTExMTEx',
+>>>>>>> 751d9d805edb45460feee5683b6eb88a4432e524
             recaptureCsc: true
           };
         const response = await ngeniusPayment.paymentFromSavedCard(paymentSavedCardUrl,accessToken,param);
@@ -90,7 +97,11 @@ async function paymentFromSavedCard(paymentSavedCardUrl){
     }
 
 }
+<<<<<<< HEAD
 // paymentFromSavedCard("");
+=======
+paymentFromSavedCard("");
+>>>>>>> 751d9d805edb45460feee5683b6eb88a4432e524
 
 
 /*
