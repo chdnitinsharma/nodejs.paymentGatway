@@ -63,12 +63,34 @@ async function getOrderDetail(orderReference){
         console.log(orderDetail._embedded.payment[0].savedCard);
         
     }catch(e){
-        console.log('hostedPaymentLinkSample Error : ',e);
+        console.log('getOrderDetail Error : ',e);
     }
 
 }
 // getOrderDetail("1a1af18a-f001-4141-a08b-f3995e78df03");
 
+
+async function paymentFromSavedCard(paymentSavedCardUrl){
+
+    const accessToken = await ngeniusPayment.getAccessToken();
+    try{
+        const param={
+            maskedPan: '411111******1111',
+            expiry: '2024-07',
+            cardholderName: 'NAME',
+            scheme: 'VISA',
+            cardToken: 'XXXXXXX',
+            recaptureCsc: true
+          };
+        const response = await ngeniusPayment.paymentFromSavedCard(paymentSavedCardUrl,accessToken,param);
+        console.log(response);
+        
+    }catch(e){
+        console.log('hostedPaymentLinkSample Error : ',e);
+    }
+
+}
+// paymentFromSavedCard("");
 
 
 /*
@@ -139,7 +161,7 @@ async function capturePayment(capture_url){
     try{
         const accessToken = await ngeniusPayment.getAccessToken();
         
-        const param={ amount: { currencyCode: 'AED', value: 2500 } };
+        const param={ amount: { currencyCode: 'AED', value: 4000 } };
         const _3dsHtml = await ngeniusPayment.capturePayment(capture_url,accessToken,param);
         console.log(_3dsHtml);
         
@@ -148,7 +170,7 @@ async function capturePayment(capture_url){
     }
 
 }
-// capturePayment("capture_url");
+// capturePayment("");
 
 
 /*
