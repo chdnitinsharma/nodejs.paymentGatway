@@ -68,16 +68,18 @@ const getAccessToken = async function () {
 
 const getHostedPaymentPageUrl = (access_token, customObj ) => {
 
-    // ?skip3ds=true
     const url = "https://api-gateway.sandbox.ngenius-payments.com/transactions/outlets/" + OUTLETS + "/orders";
     
     // eg: 2500 means AED 25.
+    //'skip3DS': true, in merchantAttributes
+    // when you have savedCard object
     const requestData = {
         'action': customObj.action,
         'amount': customObj.amount,
         'emailAddress': customObj.emailAddress,
         'merchantOrderReference': customObj.merchantOrderReference,
         'merchantAttributes': {
+            'skip3DS': true,
             'redirectUrl': customObj.redirectUrl,
             'cancelUrl':customObj.cancelUrl, 'cancelText': 'Cancel', 'skipConfirmationPage': true
         },
@@ -88,14 +90,14 @@ const getHostedPaymentPageUrl = (access_token, customObj ) => {
             'city': "city",
             'countryCode': "UAE",
         },
-        // savedCard:{
-        //     maskedPan: '411111******1111',
-        //     expiry: '2024-07',
-        //     cardholderName: 'NAME',
-        //     scheme: 'VISA',
-        //     cardToken: 'XXXXXXX',
-        //     recaptureCsc: true
-        //   }
+     savedCard:{
+            maskedPan: '411111******1111',
+            expiry: '2024-07',
+            cardholderName: 'NAME',
+            scheme: 'VISA',
+            cardToken: 'XXXXXXX',
+            recaptureCsc: true
+          }
         
     };
 
@@ -117,14 +119,18 @@ const getHostedPaymentPageUrl = (access_token, customObj ) => {
     return new Promise((resolve, reject)=>{
 
         request(options, function (error, response, body) {
+
+            console.log(JSON.stringify(body));
+            // console.log(body._links);
+
             if (body.error){
                 errorLog(body.error);
                 reject(body.error_description);
             }else{
-                console.log('body: ',body);
-
                 // you will get order reference from 'reference': body.reference
-                resolve({paymentLink: body._links['payment']['href'], reference: body.reference });
+                resolve({paymentLink: body._links['payment']['href'],
+                paymentSavedLink : body._embedded.payment[0] && body._embedded.payment[0]["_links"] && body._embedded.payment[0]["_links"]["payment:saved-card"] ? body._embedded.payment[0]["_links"]["payment:saved-card"].href:"", 
+                reference: body.reference });
             } 
     
         });
@@ -502,6 +508,44 @@ const payAfter3dPayment = (cnp3ds_url,accessToken,param, cb) => {
 };
 
 
+
+
+const paymentFromSavedCard = (saveCardPaymentUrl,accessToken,param, cb) => {
+    const url =saveCardPaymentUrl;
+    // eg: 2500 means AED 25.  
+      
+       const requestData = param;
+   
+       var options = {
+           method: 'PUT',
+           url: url,
+           headers:
+           {
+               'Content-Type': 'application/vnd.ni-payment.v2+json',
+               'Accept': 'application/vnd.ni-payment.v2+json',
+               Authorization: 'Bearer ' + accessToken
+           },
+           json: true,
+           json: requestData,
+       };
+   
+       return new Promise((resolve, reject)=>{
+           request(options, function (error, response, body) {
+   
+               if (body.error){
+                   errorLog(body.error);
+                   reject(body.error_description);
+               }else{
+
+                console.log(body);
+                console.log(JSON.stringify(body));
+                process.exit();
+        resolve(result);
+               } 
+           });
+       });
+};
+
 const capturePayment = (capture_url,accessToken,param) => {
     const url =capture_url;
     // eg: 2500 means AED 25.  
@@ -523,7 +567,7 @@ const capturePayment = (capture_url,accessToken,param) => {
    
        return new Promise((resolve, reject)=>{
            request(options, function (error, response, body) {
-            console.log(url);
+            console.log(JSON.stringify(body));
                if (body.error){
                    errorLog(body.error);
                    reject(body.error_description);
@@ -661,6 +705,7 @@ function websdk(){
     return {
         getAccessToken,
         getHostedPaymentPageUrl,
+        paymentFromSavedCard,
         createOrder,
         cardEntered,
         createOrderAndPaymentSingleCall,
