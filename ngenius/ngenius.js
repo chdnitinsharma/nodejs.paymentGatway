@@ -79,7 +79,7 @@ const getHostedPaymentPageUrl = (access_token, customObj ) => {
         'emailAddress': customObj.emailAddress,
         'merchantOrderReference': customObj.merchantOrderReference,
         'merchantAttributes': {
-            'skip3DS': true,
+            // 'skip3DS': true,
             'redirectUrl': customObj.redirectUrl,
             'cancelUrl':customObj.cancelUrl, 'cancelText': 'Cancel', 'skipConfirmationPage': true
         },
@@ -90,7 +90,7 @@ const getHostedPaymentPageUrl = (access_token, customObj ) => {
             'city': "city",
             'countryCode': "UAE",
         },
-     savedCard:{
+        savedCard:{
             maskedPan: '411111******1111',
             expiry: '2024-07',
             cardholderName: 'NAME',
@@ -331,6 +331,11 @@ const getOrderDetail = (access_token, orderReference) => {
 
     };
 
+    // STARTED: need to add payment
+    // AUTHORISED : hold amount
+    //SALE: deduct on sport
+    //CAPTURE:  capture the amount
+    
     return new Promise((resolve, reject)=>{
         request(options, function (error, response, body) {
             if (body.error){
