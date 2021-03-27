@@ -5,6 +5,13 @@
             "OUTLETS": "**OUTLETS**",
             "HOSTED_SESSION_APIKEY": "**HOSTED_SESSION_APIKEY**"
         },
-        "PayPal": null
+        "PayPal": null,
+        "INSTAMOJO": {
+            "INSTAMOJO": {
+                "API_KEY": "***API_KEY***",
+                "AUTH_TOKEN": "**AUTH_TOKEN**"
+            }
+        }
+
     }
 }

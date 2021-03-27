@@ -6,6 +6,10 @@
             "HOSTED_SESSION_APIKEY":"XXXXXXXXXXXXXXXXXXXXxxx"
     
         },
-        "PayPal": null
+        "PayPal": null,
+        "INSTAMOJO": {
+            "API_KEY": "***API_KEY***",
+            "AUTH_TOKEN": "**AUTH_TOKEN**"
+        }
     }
 }
