@@ -5,7 +5,11 @@
             "OUTLETS": "**OUTLETS**",
             "HOSTED_SESSION_APIKEY": "**HOSTED_SESSION_APIKEY**"
         },
-        "PayPal": null,
+        "PAYPAL": {
+            "CLIENT_ID": "**CLIENT_ID**",
+            "CLIENT_SECRET_KEY": "**CLIENT_SECRET_KEY**",
+            "BASEURL": "https://api-m.sandbox.paypal.com"
+        },
         "INSTAMOJO": {
             "INSTAMOJO": {
                 "API_KEY": "***API_KEY***",

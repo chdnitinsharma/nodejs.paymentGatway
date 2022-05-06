@@ -24,3 +24,8 @@ Settings > Integrations  > Service Account > New > Hosted session (Dropdown)
 
 Developer documentation: https://docs.instamojo.com/docs/payments-api
 Test Cart https://support.instamojo.com/hc/en-us/articles/208485675-Test-or-Sandbox-Account
+
+
+## paypal:
+
+Documentation https://developer.paypal.com/api/rest/
